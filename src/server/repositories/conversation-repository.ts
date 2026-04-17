@@ -4,12 +4,12 @@ import { generateId } from '@/lib/utils'
 
 export class ConversationRepository {
   getConversationById(id: string): Conversation | null {
-    const row = statements.getConversation.get(id) as any
+    const row = statements.getConversation().get(id) as any
     return row ? this.mapRowToConversation(row) : null
   }
 
   getRecentConversations(limit: number = 10): Conversation[] {
-    const rows = statements.getRecentConversations.all(limit) as any[]
+    const rows = statements.getRecentConversations().all(limit) as any[]
     return rows.map(this.mapRowToConversation)
   }
 
@@ -22,7 +22,7 @@ export class ConversationRepository {
       updated_at: new Date().toISOString()
     }
 
-    statements.insertConversation.run(
+    statements.insertConversation().run(
       conversation.id,
       conversation.user_language,
       conversation.title
@@ -32,11 +32,11 @@ export class ConversationRepository {
   }
 
   updateConversationTimestamp(id: string): void {
-    statements.updateConversation.run(id)
+    statements.updateConversation().run(id)
   }
 
   getMessagesByConversation(conversationId: string): ChatMessage[] {
-    const rows = statements.getMessagesByConversation.all(conversationId) as any[]
+    const rows = statements.getMessagesByConversation().all(conversationId) as any[]
     return rows.map(this.mapRowToMessage)
   }
 
@@ -47,7 +47,7 @@ export class ConversationRepository {
       created_at: new Date().toISOString()
     }
 
-    statements.insertMessage.run(
+    statements.insertMessage().run(
       newMessage.id,
       newMessage.conversation_id,
       newMessage.role,

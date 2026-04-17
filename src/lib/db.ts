@@ -19,6 +19,27 @@ db.pragma('synchronous = NORMAL')
 db.pragma('cache_size = 1000')
 db.pragma('temp_store = MEMORY')
 
+// Track if database is initialized
+let isInitialized = false
+
+// Check if tables exist
+function tablesExist(): boolean {
+  try {
+    const result = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='schemes'").get()
+    return !!result
+  } catch {
+    return false
+  }
+}
+
+// Initialize database if needed
+function ensureInitialized() {
+  if (!isInitialized && !tablesExist()) {
+    initializeDatabase()
+    isInitialized = true
+  }
+}
+
 // Create tables
 export function initializeDatabase() {
   // Schemes table
@@ -191,6 +212,7 @@ export function initializeDatabase() {
   `)
 
   console.log('Database initialized successfully')
+  isInitialized = true
 }
 
 // Helper functions for JSON handling
@@ -212,82 +234,154 @@ export function transaction<T>(fn: () => T): T {
   return db.transaction(fn)()
 }
 
-// Prepared statements for common queries
+// Safe prepared statements that initialize DB if needed
 export const statements = {
   // Schemes
-  getScheme: db.prepare('SELECT * FROM schemes WHERE id = ?'),
-  getSchemeBySlug: db.prepare('SELECT * FROM schemes WHERE slug = ?'),
-  listSchemes: db.prepare('SELECT * FROM schemes ORDER BY name'),
-  searchSchemes: db.prepare(`
-    SELECT * FROM schemes 
-    WHERE name LIKE ? OR summary LIKE ? OR category LIKE ?
-    ORDER BY name
-  `),
-  insertScheme: db.prepare(`
-    INSERT INTO schemes (id, name, slug, summary, department, category, beneficiary_types, states, languages, application_mode, official_url, last_updated)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `),
+  getScheme: () => {
+    ensureInitialized()
+    return db.prepare('SELECT * FROM schemes WHERE id = ?')
+  },
+  getSchemeBySlug: () => {
+    ensureInitialized()
+    return db.prepare('SELECT * FROM schemes WHERE slug = ?')
+  },
+  listSchemes: () => {
+    ensureInitialized()
+    return db.prepare('SELECT * FROM schemes ORDER BY name')
+  },
+  searchSchemes: () => {
+    ensureInitialized()
+    return db.prepare(`
+      SELECT * FROM schemes 
+      WHERE name LIKE ? OR summary LIKE ? OR category LIKE ?
+      ORDER BY name
+    `)
+  },
+  insertScheme: () => {
+    ensureInitialized()
+    return db.prepare(`
+      INSERT INTO schemes (id, name, slug, summary, department, category, beneficiary_types, states, languages, application_mode, official_url, last_updated)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `)
+  },
 
   // Source chunks
-  getSourceChunksByScheme: db.prepare('SELECT * FROM source_chunks WHERE scheme_id = ? ORDER BY chunk_index'),
-  insertSourceChunk: db.prepare(`
-    INSERT INTO source_chunks (id, scheme_id, source_type, source_title, section_title, content, chunk_index, citation_url, language)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `),
+  getSourceChunksByScheme: () => {
+    ensureInitialized()
+    return db.prepare('SELECT * FROM source_chunks WHERE scheme_id = ? ORDER BY chunk_index')
+  },
+  insertSourceChunk: () => {
+    ensureInitialized()
+    return db.prepare(`
+      INSERT INTO source_chunks (id, scheme_id, source_type, source_title, section_title, content, chunk_index, citation_url, language)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `)
+  },
 
   // Eligibility rules
-  getEligibilityRulesByScheme: db.prepare('SELECT * FROM eligibility_rules WHERE scheme_id = ? ORDER BY severity DESC'),
-  insertEligibilityRule: db.prepare(`
-    INSERT INTO eligibility_rules (id, scheme_id, rule_type, operator, value, description, severity)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `),
+  getEligibilityRulesByScheme: () => {
+    ensureInitialized()
+    return db.prepare('SELECT * FROM eligibility_rules WHERE scheme_id = ? ORDER BY severity DESC')
+  },
+  insertEligibilityRule: () => {
+    ensureInitialized()
+    return db.prepare(`
+      INSERT INTO eligibility_rules (id, scheme_id, rule_type, operator, value, description, severity)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `)
+  },
 
   // Document requirements
-  getDocumentsByScheme: db.prepare('SELECT * FROM document_requirements WHERE scheme_id = ? ORDER BY required DESC, document_name'),
-  insertDocument: db.prepare(`
-    INSERT INTO document_requirements (id, scheme_id, document_name, required, notes)
-    VALUES (?, ?, ?, ?, ?)
-  `),
+  getDocumentsByScheme: () => {
+    ensureInitialized()
+    return db.prepare('SELECT * FROM document_requirements WHERE scheme_id = ? ORDER BY required DESC, document_name')
+  },
+  insertDocument: () => {
+    ensureInitialized()
+    return db.prepare(`
+      INSERT INTO document_requirements (id, scheme_id, document_name, required, notes)
+      VALUES (?, ?, ?, ?, ?)
+    `)
+  },
 
   // Application steps
-  getStepsByScheme: db.prepare('SELECT * FROM application_steps WHERE scheme_id = ? ORDER BY step_number'),
-  insertStep: db.prepare(`
-    INSERT INTO application_steps (id, scheme_id, step_number, title, description, mode)
-    VALUES (?, ?, ?, ?, ?, ?)
-  `),
+  getStepsByScheme: () => {
+    ensureInitialized()
+    return db.prepare('SELECT * FROM application_steps WHERE scheme_id = ? ORDER BY step_number')
+  },
+  insertStep: () => {
+    ensureInitialized()
+    return db.prepare(`
+      INSERT INTO application_steps (id, scheme_id, step_number, title, description, mode)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `)
+  },
 
   // Conversations
-  getConversation: db.prepare('SELECT * FROM conversations WHERE id = ?'),
-  getRecentConversations: db.prepare('SELECT * FROM conversations ORDER BY updated_at DESC LIMIT ?'),
-  insertConversation: db.prepare(`
-    INSERT INTO conversations (id, user_language, title)
-    VALUES (?, ?, ?)
-  `),
-  updateConversation: db.prepare(`
-    UPDATE conversations SET updated_at = CURRENT_TIMESTAMP WHERE id = ?
-  `),
+  getConversation: () => {
+    ensureInitialized()
+    return db.prepare('SELECT * FROM conversations WHERE id = ?')
+  },
+  getRecentConversations: () => {
+    ensureInitialized()
+    return db.prepare('SELECT * FROM conversations ORDER BY updated_at DESC LIMIT ?')
+  },
+  insertConversation: () => {
+    ensureInitialized()
+    return db.prepare(`
+      INSERT INTO conversations (id, user_language, title)
+      VALUES (?, ?, ?)
+    `)
+  },
+  updateConversation: () => {
+    ensureInitialized()
+    return db.prepare(`
+      UPDATE conversations SET updated_at = CURRENT_TIMESTAMP WHERE id = ?
+    `)
+  },
 
   // Chat messages
-  getMessagesByConversation: db.prepare('SELECT * FROM chat_messages WHERE conversation_id = ? ORDER BY created_at'),
-  insertMessage: db.prepare(`
-    INSERT INTO chat_messages (id, conversation_id, role, content, language, citations)
-    VALUES (?, ?, ?, ?, ?, ?)
-  `),
+  getMessagesByConversation: () => {
+    ensureInitialized()
+    return db.prepare('SELECT * FROM chat_messages WHERE conversation_id = ? ORDER BY created_at')
+  },
+  insertMessage: () => {
+    ensureInitialized()
+    return db.prepare(`
+      INSERT INTO chat_messages (id, conversation_id, role, content, language, citations)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `)
+  },
 
   // Benchmark questions
-  getBenchmarkQuestions: db.prepare('SELECT * FROM benchmark_questions'),
-  getBenchmarkQuestionsByCategory: db.prepare('SELECT * FROM benchmark_questions WHERE category = ?'),
-  insertBenchmarkQuestion: db.prepare(`
-    INSERT INTO benchmark_questions (id, question, language, expected_scheme_ids, expected_answer_points, category, difficulty)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `),
+  getBenchmarkQuestions: () => {
+    ensureInitialized()
+    return db.prepare('SELECT * FROM benchmark_questions')
+  },
+  getBenchmarkQuestionsByCategory: () => {
+    ensureInitialized()
+    return db.prepare('SELECT * FROM benchmark_questions WHERE category = ?')
+  },
+  insertBenchmarkQuestion: () => {
+    ensureInitialized()
+    return db.prepare(`
+      INSERT INTO benchmark_questions (id, question, language, expected_scheme_ids, expected_answer_points, category, difficulty)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `)
+  },
 
   // Evaluation results
-  getEvaluationResults: db.prepare('SELECT * FROM evaluation_results WHERE run_id = ?'),
-  insertEvaluationResult: db.prepare(`
-    INSERT INTO evaluation_results (id, benchmark_question_id, retrieved_scheme_ids, retrieval_score, answer_score, citation_coverage, language_score, run_id)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-  `),
+  getEvaluationResults: () => {
+    ensureInitialized()
+    return db.prepare('SELECT * FROM evaluation_results WHERE run_id = ?')
+  },
+  insertEvaluationResult: () => {
+    ensureInitialized()
+    return db.prepare(`
+      INSERT INTO evaluation_results (id, benchmark_question_id, retrieved_scheme_ids, retrieval_score, answer_score, citation_coverage, language_score, run_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `)
+  },
 }
 
 export default db

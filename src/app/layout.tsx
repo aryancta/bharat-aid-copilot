@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     'multilingual',
     'AI assistant'
   ],
-  authors: [{ name: 'Aryan Choudhary', email: 'aryancta@gmail.com' }],
+  authors: [{ name: 'Aryan Choudhary' }],
   creator: 'Aryan Choudhary',
   openGraph: {
     type: 'website',

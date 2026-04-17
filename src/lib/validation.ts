@@ -13,11 +13,11 @@ const educationLevels = EDUCATION_LEVELS as readonly string[]
 export const UserProfileSchema = z.object({
   id: z.string().optional(),
   age: z.number().min(0).max(120).optional(),
-  state: z.enum(indianStates as [string, ...string[]]).optional(),
+  state: z.string().optional(),
   income: z.number().min(0).optional(),
-  occupation: z.enum(occupationCategories as [string, ...string[]]).optional(),
-  category: z.enum(socialCategories as [string, ...string[]]).optional(),
-  education: z.enum(educationLevels as [string, ...string[]]).optional(),
+  occupation: z.string().optional(),
+  category: z.string().optional(),
+  education: z.string().optional(),
   gender: z.enum(['Male', 'Female', 'Other']).optional(),
   disability_status: z.enum(['None', 'Visual', 'Hearing', 'Physical', 'Intellectual', 'Multiple']).optional(),
   created_at: z.string().optional(),
@@ -25,7 +25,7 @@ export const UserProfileSchema = z.object({
 
 export const ChatRequestSchema = z.object({
   message: z.string().min(1).max(1000),
-  language: z.enum(supportedLanguages as [string, ...string[]]).default('en'),
+  language: z.string().default('en'),
   conversation_id: z.string().uuid().optional(),
   profile: UserProfileSchema.optional(),
 })
@@ -44,10 +44,10 @@ export const ChecklistGenerateRequestSchema = z.object({
 
 export const SchemesQuerySchema = z.object({
   q: z.string().optional(),
-  category: z.enum(schemeCategories as [string, ...string[]]).optional(),
-  state: z.enum([...indianStates, 'All India'] as [string, ...string[]]).optional(),
+  category: z.string().optional(),
+  state: z.string().optional(),
   beneficiary_type: z.string().optional(),
-  language: z.enum(supportedLanguages as [string, ...string[]]).optional(),
+  language: z.string().optional(),
   application_mode: z.enum(['online', 'offline', 'both']).optional(),
   page: z.coerce.number().min(1).default(1),
   limit: z.coerce.number().min(1).max(100).default(12),
@@ -56,7 +56,7 @@ export const SchemesQuerySchema = z.object({
 
 export const EvaluationQuerySchema = z.object({
   run_id: z.string().optional(),
-  language: z.enum(supportedLanguages as [string, ...string[]]).optional(),
+  language: z.string().optional(),
   category: z.string().optional(),
 })
 
@@ -67,10 +67,10 @@ export const SchemeSchema = z.object({
   slug: z.string(),
   summary: z.string(),
   department: z.string(),
-  category: z.enum(schemeCategories as [string, ...string[]]),
+  category: z.string(),
   beneficiary_types: z.array(z.string()),
   states: z.array(z.string()),
-  languages: z.array(z.enum(supportedLanguages as [string, ...string[]])),
+  languages: z.array(z.string()),
   application_mode: z.enum(['online', 'offline', 'both']),
   official_url: z.string().url(),
   last_updated: z.string(),
@@ -86,7 +86,7 @@ export const SourceChunkSchema = z.object({
   chunk_index: z.number().min(0),
   embedding_id: z.string().optional(),
   citation_url: z.string().url(),
-  language: z.enum(supportedLanguages as [string, ...string[]]),
+  language: z.string(),
   created_at: z.string(),
 })
 
@@ -122,7 +122,7 @@ export const ApplicationStepSchema = z.object({
 
 export const ConversationSchema = z.object({
   id: z.string(),
-  user_language: z.enum(supportedLanguages as [string, ...string[]]),
+  user_language: z.string(),
   created_at: z.string(),
   updated_at: z.string(),
   title: z.string(),
@@ -133,7 +133,7 @@ export const ChatMessageSchema = z.object({
   conversation_id: z.string(),
   role: z.enum(['user', 'assistant', 'system']),
   content: z.string(),
-  language: z.enum(supportedLanguages as [string, ...string[]]),
+  language: z.string(),
   created_at: z.string(),
   citations: z.array(z.any()).optional(),
 })
@@ -141,7 +141,7 @@ export const ChatMessageSchema = z.object({
 export const BenchmarkQuestionSchema = z.object({
   id: z.string(),
   question: z.string(),
-  language: z.enum(supportedLanguages as [string, ...string[]]),
+  language: z.string(),
   expected_scheme_ids: z.array(z.string()),
   expected_answer_points: z.array(z.string()),
   category: z.string(),
@@ -170,7 +170,7 @@ export const HealthResponseSchema = z.object({
 
 export const ChatResponseSchema = z.object({
   answer: z.string(),
-  answer_language: z.enum(supportedLanguages as [string, ...string[]]),
+  answer_language: z.string(),
   citations: z.array(z.any()),
   confidence: z.number().min(0).max(1),
   follow_ups: z.array(z.string()),

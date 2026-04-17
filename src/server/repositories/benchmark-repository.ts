@@ -4,12 +4,12 @@ import { generateId } from '@/lib/utils'
 
 export class BenchmarkRepository {
   getAllBenchmarks(): BenchmarkQuestion[] {
-    const rows = statements.getBenchmarkQuestions.all() as any[]
+    const rows = statements.getBenchmarkQuestions().all() as any[]
     return rows.map(this.mapRowToBenchmarkQuestion)
   }
 
   getBenchmarksByCategory(category: string): BenchmarkQuestion[] {
-    const rows = statements.getBenchmarkQuestionsByCategory.all(category) as any[]
+    const rows = statements.getBenchmarkQuestionsByCategory().all(category) as any[]
     return rows.map(this.mapRowToBenchmarkQuestion)
   }
 
@@ -26,7 +26,7 @@ export class BenchmarkRepository {
   }
 
   insertBenchmark(benchmark: BenchmarkQuestion): void {
-    statements.insertBenchmarkQuestion.run(
+      statements.insertBenchmarkQuestion().run(
       benchmark.id,
       benchmark.question,
       benchmark.language,

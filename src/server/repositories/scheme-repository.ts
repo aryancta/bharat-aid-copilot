@@ -4,17 +4,17 @@ import { generateId } from '@/lib/utils'
 
 export class SchemeRepository {
   getAllSchemes(): Scheme[] {
-    const rows = statements.listSchemes.all() as any[]
+    const rows = statements.listSchemes().all() as any[]
     return rows.map(this.mapRowToScheme)
   }
 
   getSchemeById(id: string): Scheme | null {
-    const row = statements.getScheme.get(id) as any
+    const row = statements.getScheme().get(id) as any
     return row ? this.mapRowToScheme(row) : null
   }
 
   getSchemeBySlug(slug: string): Scheme | null {
-    const row = statements.getSchemeBySlug.get(slug) as any
+    const row = statements.getSchemeBySlug().get(slug) as any
     return row ? this.mapRowToScheme(row) : null
   }
 
@@ -95,7 +95,7 @@ export class SchemeRepository {
   }
 
   insertScheme(scheme: Scheme): void {
-    statements.insertScheme.run(
+    statements.insertScheme().run(
       scheme.id,
       scheme.name,
       scheme.slug,
@@ -112,12 +112,12 @@ export class SchemeRepository {
   }
 
   getSourceChunksByScheme(schemeId: string): SourceChunk[] {
-    const rows = statements.getSourceChunksByScheme.all(schemeId) as any[]
+    const rows = statements.getSourceChunksByScheme().all(schemeId) as any[]
     return rows.map(this.mapRowToSourceChunk)
   }
 
   insertSourceChunk(chunk: SourceChunk): void {
-    statements.insertSourceChunk.run(
+    statements.insertSourceChunk().run(
       chunk.id,
       chunk.scheme_id,
       chunk.source_type,
@@ -131,12 +131,12 @@ export class SchemeRepository {
   }
 
   getEligibilityRulesByScheme(schemeId: string): EligibilityRule[] {
-    const rows = statements.getEligibilityRulesByScheme.all(schemeId) as any[]
+    const rows = statements.getEligibilityRulesByScheme().all(schemeId) as any[]
     return rows.map(this.mapRowToEligibilityRule)
   }
 
   insertEligibilityRule(rule: EligibilityRule): void {
-    statements.insertEligibilityRule.run(
+    statements.insertEligibilityRule().run(
       rule.id,
       rule.scheme_id,
       rule.rule_type,
@@ -148,12 +148,12 @@ export class SchemeRepository {
   }
 
   getDocumentsByScheme(schemeId: string): DocumentRequirement[] {
-    const rows = statements.getDocumentsByScheme.all(schemeId) as any[]
+    const rows = statements.getDocumentsByScheme().all(schemeId) as any[]
     return rows.map(this.mapRowToDocument)
   }
 
   insertDocument(doc: DocumentRequirement): void {
-    statements.insertDocument.run(
+    statements.insertDocument().run(
       doc.id,
       doc.scheme_id,
       doc.document_name,
@@ -163,12 +163,12 @@ export class SchemeRepository {
   }
 
   getStepsByScheme(schemeId: string): ApplicationStep[] {
-    const rows = statements.getStepsByScheme.all(schemeId) as any[]
+    const rows = statements.getStepsByScheme().all(schemeId) as any[]
     return rows.map(this.mapRowToStep)
   }
 
   insertStep(step: ApplicationStep): void {
-    statements.insertStep.run(
+    statements.insertStep().run(
       step.id,
       step.scheme_id,
       step.step_number,

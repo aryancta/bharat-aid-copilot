@@ -4,17 +4,17 @@ import { generateId } from '@/lib/utils'
 
 export class EvaluationRepository {
   getAllBenchmarkQuestions(): BenchmarkQuestion[] {
-    const rows = statements.getBenchmarkQuestions.all() as any[]
+    const rows = statements.getBenchmarkQuestions().all() as any[]
     return rows.map(this.mapRowToBenchmarkQuestion)
   }
 
   getBenchmarkQuestionsByCategory(category: string): BenchmarkQuestion[] {
-    const rows = statements.getBenchmarkQuestionsByCategory.all(category) as any[]
+    const rows = statements.getBenchmarkQuestionsByCategory().all(category) as any[]
     return rows.map(this.mapRowToBenchmarkQuestion)
   }
 
   insertBenchmarkQuestion(question: BenchmarkQuestion): void {
-    statements.insertBenchmarkQuestion.run(
+    statements.insertBenchmarkQuestion().run(
       question.id,
       question.question,
       question.language,
@@ -26,12 +26,12 @@ export class EvaluationRepository {
   }
 
   getEvaluationResultsByRunId(runId: string): EvaluationResult[] {
-    const rows = statements.getEvaluationResults.all(runId) as any[]
+    const rows = statements.getEvaluationResults().all(runId) as any[]
     return rows.map(this.mapRowToEvaluationResult)
   }
 
   insertEvaluationResult(result: EvaluationResult): void {
-    statements.insertEvaluationResult.run(
+    statements.insertEvaluationResult().run(
       result.id,
       result.benchmark_question_id,
       stringifyJSON(result.retrieved_scheme_ids),
