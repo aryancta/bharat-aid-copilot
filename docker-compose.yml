@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=sqlite:./data/app.db
+      - NEXT_PUBLIC_APP_URL=http://localhost:3000
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: Development setup with hot reload
+  dev:
+    build:
+      context: .
+      target: base
+    ports:
+      - "3001:3000"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=sqlite:./data/app-dev.db
+      - NEXT_PUBLIC_APP_URL=http://localhost:3001
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - ./data:/app/data
+    command: npm run dev
+    profiles:
+      - dev
+
+volumes:
+  data:
+    driver: local
